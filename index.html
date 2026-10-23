@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>تحدي لوحة الرشق | Target Cheek Challenge</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ff4757">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" type="image/png" href="assets/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="game-container">
+    <!-- Game Canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Top HUD Bar -->
+    <header id="hud" class="hud-bar">
+      <div class="hud-left">
+        <div class="hud-card score-card">
+          <span class="hud-label" data-i18n="score">النقاط</span>
+          <span id="score-val" class="hud-val">0</span>
+        </div>
+        <div class="hud-card combo-card" id="combo-box">
+          <span class="hud-label" data-i18n="combo">المضاعف</span>
+          <span id="combo-val" class="hud-val">x1</span>
+        </div>
+      </div>
+
+      <div class="hud-center">
+        <div class="hud-card level-card">
+          <span id="level-title" class="hud-val">المرحلة 1</span>
+        </div>
+        <div id="wind-meter" class="wind-indicator" title="سرعة واتجاه الرياح">
+          <span class="wind-arrow" id="wind-arrow">➤</span>
+          <span id="wind-val" class="wind-text">0 m/s</span>
+        </div>
+      </div>
+
+      <div class="hud-right">
+        <div class="hud-card darts-card">
+          <span class="hud-label" data-i18n="darts">الأسهم</span>
+          <div id="dart-icons-container" class="dart-icons"></div>
+        </div>
+        <div class="hud-controls">
+          <button id="lang-btn" class="icon-btn" title="تغيير اللغة / Change Language">🌐 AR</button>
+          <button id="sound-btn" class="icon-btn" title="المؤثرات الصوتية">🔊</button>
+          <button id="music-btn" class="icon-btn" title="الموسيقى">🎵</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Dart Selection Dock (Bottom Bar) -->
+    <div id="dart-dock" class="dart-dock">
+      <button class="dart-select active" data-type="classic" title="سهم كلاسيكي">
+        <span class="dart-emoji">🎯</span>
+        <span class="dart-name" data-i18n="dartClassic">كلاسيكي</span>
+      </button>
+      <button class="dart-select" data-type="gold" title="سهم ذهبي: نقاط مضاعفة">
+        <span class="dart-emoji">⭐</span>
+        <span class="dart-name" data-i18n="dartGold">ذهبي (x2)</span>
+      </button>
+      <button class="dart-select" data-type="plunger" title="سهم شفاطة كرتوني">
+        <span class="dart-emoji">🪠</span>
+        <span class="dart-name" data-i18n="dartPlunger">شفاطة</span>
+      </button>
+      <button class="dart-select" data-type="fire" title="سهم اللهب الحارق">
+        <span class="dart-emoji">🔥</span>
+        <span class="dart-name" data-i18n="dartFire">لهب</span>
+      </button>
+    </div>
+
+    <!-- Throwing Mode Switcher -->
+    <div id="aim-mode-toggle" class="aim-mode-toggle">
+      <button id="mode-click" class="toggle-pill active" data-i18n="aimClick">🎯 صوب وانقر</button>
+      <button id="mode-drag" class="toggle-pill" data-i18n="aimDrag">🏹 شد وأفلت</button>
+    </div>
+
+    <!-- Start Screen Overlay -->
+    <div id="start-screen" class="overlay active">
+      <div class="modal-card bounce-in">
+        <div class="hero-image-wrap">
+          <img src="assets/cover.jpg" alt="Target Cheek Challenge" class="hero-img">
+        </div>
+        <h1 class="game-title" data-i18n="gameTitle">تحدي لوحة الرشق!</h1>
+        <p class="game-subtitle" data-i18n="gameSubtitle">أصِب لوحة الهدف المعلقة على بطلنا في الحديقة المشمسة واجمع أعلى النقاط!</p>
+
+        <div class="game-modes-select">
+          <button class="mode-btn active" data-mode="career">
+            <span class="mode-icon">🏆</span>
+            <div>
+              <strong data-i18n="modeCareer">مغامرة المراحل</strong>
+              <small data-i18n="modeCareerDesc">5 مراحل تزداد حركة وسرعة ورياحاً</small>
+            </div>
+          </button>
+          <button class="mode-btn" data-mode="blitz">
+            <span class="mode-icon">⏱️</span>
+            <div>
+              <strong data-i18n="modeBlitz">تحدي الـ 60 ثانية</strong>
+              <small data-i18n="modeBlitzDesc">ارمِ بأسرع ما يمكن لتحطيم الرقم القياسي</small>
+            </div>
+          </button>
+          <button class="mode-btn" data-mode="free">
+            <span class="mode-icon">🎯</span>
+            <div>
+              <strong data-i18n="modeFree">تدريب مفتوح</strong>
+              <small data-i18n="modeFreeDesc">أسهم غير محدودة لاختبار التصويب</small>
+            </div>
+          </button>
+        </div>
+
+        <button id="start-play-btn" class="big-cta-btn pulse-glow">
+          <span data-i18n="playNow">🚀 ابدأ اللعب الآن</span>
+        </button>
+
+        <button id="install-app-btn" class="sec-btn" style="display:none; background:#2ed573; color:white; font-weight:800; margin-top:10px;">
+          📲 تثبيت اللعبة على هاتفك (تطبيق أندرويد)
+        </button>
+
+        <div class="high-score-banner">
+          <span data-i18n="highScore">أعلى رقم قياسي:</span> <strong id="best-score-display">0</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Level Complete Modal -->
+    <div id="level-modal" class="overlay">
+      <div class="modal-card level-card-modal pop-in">
+        <div class="modal-header">
+          <span class="trophy-emoji">🌟</span>
+          <h2 id="modal-level-status" data-i18n="levelCleared">رائع! أكملت المرحلة!</h2>
+        </div>
+        <div class="stars-row" id="stars-container">
+          <span class="star-icon">⭐</span>
+          <span class="star-icon">⭐</span>
+          <span class="star-icon">⭐</span>
+        </div>
+        <div class="results-stats">
+          <div class="stat-line">
+            <span data-i18n="levelScore">نقاط المرحلة:</span>
+            <strong id="stat-level-score">0</strong>
+          </div>
+          <div class="stat-line">
+            <span data-i18n="bullseyes">إصابات في منتصف الهدف (Bullseye):</span>
+            <strong id="stat-bullseyes">0</strong>
+          </div>
+          <div class="stat-line">
+            <span data-i18n="accuracy">دقة التصويب:</span>
+            <strong id="stat-accuracy">100%</strong>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button id="next-level-btn" class="big-cta-btn" data-i18n="nextLevel">المرحلة التالية ⏩</button>
+          <button id="retry-level-btn" class="sec-btn" data-i18n="replay">إعادة المحاولة 🔄</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="game-over-modal" class="overlay">
+      <div class="modal-card pop-in">
+        <span class="trophy-emoji">🏁</span>
+        <h2 id="gameover-title" data-i18n="gameOver">انتهت الجولة!</h2>
+        <div class="final-score-box">
+          <span data-i18n="finalScore">مجموع النقاط النهائي:</span>
+          <div id="gameover-score" class="big-num">0</div>
+        </div>
+        <div class="modal-actions">
+          <button id="play-again-btn" class="big-cta-btn" data-i18n="playAgain">العب مجدداً 🎯</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="audio.js"></script>
+  <script src="game.js"></script>
+  <script>
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW error:', err));
+      });
+    }
+
+    // Android PWA Install Prompt
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const installBtn = document.getElementById('install-app-btn');
+      if (installBtn) installBtn.style.display = 'block';
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const installBtn = document.getElementById('install-app-btn');
+      if (installBtn) {
+        installBtn.addEventListener('click', async () => {
+          if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            deferredPrompt = null;
+            if (outcome === 'accepted') {
+              installBtn.style.display = 'none';
+            }
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
